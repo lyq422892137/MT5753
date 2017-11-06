@@ -961,8 +961,292 @@ t.test(Year)
   #####################################Q19
   EIA$sqrtdensity<-sqrt(density)
   library("nlme")
-  ##fit.gls<-gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + impact:x.pos + impact:y.pos, data = EIA, method='ML', weights=????)
-  fit.gls<-gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + impact:x.pos + impact:y.pos, data = EIA, method='ML')
-  ?gls
+  ##fit.gls<-gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + x.pos:impact + y.pos:impact, data = EIA, method='ML', weights=????)
+  fit.gls<-gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + x.pos:impact + y.pos:impact, data = EIA, method='ML')
+
+  fit.gls
+  # Generalized least squares fit by maximum likelihood
+  # Model: sqrtdensity ~ tidestate + observationhour + impact + x.pos +      y.pos + MonthOfYear + x.pos:impact + y.pos:impact 
+  # Data: EIA 
+  # Log-likelihood: -40837.5
+  # 
+  # Coefficients:
+  #   (Intercept)  tidestateFLOOD  tidestateSLACK observationhour          impact 
+  # 9.123489e-01    9.277956e-03    7.174862e-02   -2.959807e-02   -1.554046e-01 
+  # x.pos           y.pos     MonthOfYear    x.pos:impact    y.pos:impact 
+  # 5.624827e-05    2.125645e-05    2.801426e-03   -1.753025e-05   -8.239727e-06 
+  # 
+  # Degrees of freedom: 27798 total; 27788 residual
+  # Residual standard error: 1.05142 
+  
+  summary(fit.gls)
+  # Length Class     Mode     
+  # modelStruct      0  glsStruct list     
+  # dims             3  -none-    list     
+  # contrasts        1  -none-    list     
+  # coefficients    10  -none-    numeric  
+  # varBeta        100  -none-    numeric  
+  # sigma            1  -none-    numeric  
+  # apVar            0  -none-    NULL     
+  # logLik           1  -none-    numeric  
+  # numIter          1  -none-    numeric  
+  # groups           0  -none-    NULL     
+  # call             4  -none-    call     
+  # method           1  -none-    character
+  # fitted       27798  -none-    numeric  
+  # residuals    27798  -none-    numeric  
+  # parAssign        9  -none-    list     
+  # na.action        0  -none-    NULL 
+  
+  plot(fitted(fit.gls), residuals(fit.gls, type='response'))
+  cut.fit<-cut(fitted(fit.gls), breaks=quantile(fitted(fit.gls), probs=seq(0,1,length=20)))
+  means1<- tapply(fitted(fit.gls), cut.fit, mean)
+  vars1<- tapply(residuals(fit.gls),cut.fit,var)
+  plot(means1,vars1, xlab="Fitted Values",ylab="Variance of the residuals",main="mean-variance plot",pch=16)
+  abline(h=summary(fit.gls)$sigma**2,lwd=2)
+  
+  
+  par(mfrow=c(1,2))
+  acf(residuals(fit.gls, type='response'))
+  acf(residuals(fit.gls, type='normalized'))
+  
+  
+  EIA$block<-paste(Year, MonthOfYear, DayOfMonth, GridCode, sep='')
+  require(dplyr)
+  EIA2<-arrange(EIA, block, Year, MonthOfYear, DayOfMonth, GridCode)
+  
+  library("nlme")
+  workingModel_GLScorr<- gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + x.pos:impact + y.pos:impact, data = EIA,weights=varExp(),
+                             correlation=corAR1(form =~1|block),method="ML")
+ 
+ 
+ summary(workingModel_GLScorr)
+ # Generalized least squares fit by maximum likelihood
+ # Model: sqrtdensity ~ tidestate + observationhour + impact + x.pos +      y.pos + MonthOfYear + x.pos:impact + y.pos:impact 
+ # Data: EIA 
+ # AIC      BIC    logLik
+ # 72186.55 72293.58 -36080.28
+ # 
+ # Correlation Structure: AR(1)
+ # Formula: ~1 | block 
+ # Parameter estimate(s):
+ #   Phi 
+ # 0.5134957 
+ # Variance function:
+ #   Structure: Exponential of variance covariate
+ # Formula: ~fitted(.) 
+ # Parameter estimates:
+ #   expon 
+ # 1.26813 
+ # 
+ # Coefficients:
+ #   Value  Std.Error    t-value p-value
+ # (Intercept)      0.8959911 0.04457693  20.099885  0.0000
+ # tidestateFLOOD   0.0279952 0.01526959   1.833398  0.0668
+ # tidestateSLACK   0.0895393 0.01361160   6.578166  0.0000
+ # observationhour -0.0290912 0.00237651 -12.241180  0.0000
+ # impact          -0.1459943 0.03709040  -3.936175  0.0001
+ # x.pos            0.0000651 0.00000884   7.359235  0.0000
+ # y.pos           -0.0000016 0.00000638  -0.252535  0.8006
+ # MonthOfYear      0.0009043 0.00260150   0.347616  0.7281
+ # x.pos:impact    -0.0000202 0.00001173  -1.724299  0.0847
+ # y.pos:impact     0.0000005 0.00000854   0.056798  0.9547
+ # 
+ # Correlation: 
+ #   (Intr) tFLOOD tSLACK obsrvt impact x.pos  y.pos  MnthOY impct:x.
+ # tidestateFLOOD  -0.139                                                          
+ # tidestateSLACK  -0.102  0.554                                                   
+ # observationhour -0.664 -0.036 -0.037                                            
+ # impact          -0.480  0.000  0.000  0.000                                     
+ # x.pos            0.551  0.000  0.000  0.000 -0.662                              
+ # y.pos            0.333  0.000  0.000  0.000 -0.400  0.417                       
+ # MonthOfYear     -0.328 -0.010 -0.025 -0.045  0.000  0.000  0.000                
+ # x.pos:impact    -0.415  0.000  0.000  0.000  0.866 -0.753 -0.314  0.000         
+ # y.pos:impact    -0.249  0.000  0.000  0.000  0.538 -0.311 -0.747  0.000  0.422  
+ # 
+ # Standardized residuals:
+ #   Min         Q1        Med         Q3        Max 
+ # -0.4843916 -0.4325440 -0.3737026 -0.2636188 10.0194096 
+ # 
+ # Residual standard error: 0.5988873 
+ # Degrees of freedom: 27798 total; 27788 residual
+ 
+ 
+ workingModel_GLScorr2<-update(workingModel_GLScorr,
+                               corr = corARMA(p = 2, q = 0, form = ~ 1 | block))
+ summary(workingModel_GLScorr2)
+ 
+ # Generalized least squares fit by maximum likelihood
+ # Model: sqrtdensity ~ tidestate + observationhour + impact + x.pos +      y.pos + MonthOfYear + x.pos:impact + y.pos:impact 
+ # Data: EIA 
+ # AIC      BIC    logLik
+ # 70317.97 70433.22 -35144.98
+ # 
+ # Correlation Structure: ARMA(2,0)
+ # Formula: ~1 | block 
+ # Parameter estimate(s):
+ #   Phi1      Phi2 
+ # 0.3484719 0.3181314 
+ # Variance function:
+ #   Structure: Exponential of variance covariate
+ # Formula: ~fitted(.) 
+ # Parameter estimates:
+ #   expon 
+ # 1.256588 
+ # 
+ # Coefficients:
+ #   Value  Std.Error    t-value p-value
+ # (Intercept)      0.8996255 0.04724198  19.042926  0.0000
+ # tidestateFLOOD   0.0315160 0.01391591   2.264746  0.0235
+ # tidestateSLACK   0.0863840 0.01220437   7.078117  0.0000
+ # observationhour -0.0302268 0.00235322 -12.844862  0.0000
+ # impact          -0.1400594 0.04114370  -3.404152  0.0007
+ # x.pos            0.0000613 0.00000980   6.252101  0.0000
+ # y.pos            0.0000006 0.00000712   0.084635  0.9326
+ # MonthOfYear      0.0008115 0.00288528   0.281240  0.7785
+ # x.pos:impact    -0.0000179 0.00001304  -1.372715  0.1699
+ # y.pos:impact    -0.0000014 0.00000953  -0.146846  0.8833
+ # 
+ # Correlation: 
+ #   (Intr) tFLOOD tSLACK obsrvt impact x.pos  y.pos  MnthOY impct:x.
+ # tidestateFLOOD  -0.108                                                          
+ # tidestateSLACK  -0.077  0.561                                                   
+ # observationhour -0.632 -0.047 -0.044                                            
+ # impact          -0.500  0.000  0.000  0.000                                     
+ # x.pos            0.572  0.000  0.000  0.000 -0.657                              
+ # y.pos            0.354  0.000  0.000  0.000 -0.407  0.419                       
+ # MonthOfYear     -0.359 -0.011 -0.022 -0.031  0.000  0.000  0.000                
+ # x.pos:impact    -0.430  0.000  0.000  0.000  0.863 -0.751 -0.315  0.000         
+ # y.pos:impact    -0.264  0.000  0.000  0.000  0.545 -0.313 -0.747  0.000  0.424  
+ # 
+ # Standardized residuals:
+ #   Min         Q1        Med         Q3        Max 
+ # -0.4856895 -0.4326939 -0.3741100 -0.2622258 10.0270279 
+ # 
+ # Residual standard error: 0.6027399 
+ # Degrees of freedom: 27798 total; 27788 residual
+ 
+ 
+ #fit an AR(3) process
+ workingModel_GLScorr3<-update(workingModel_GLScorr,
+                                 corr = corARMA(p = 3, q = 0, form = ~ 1 | block))
+ summary(workingModel_GLScorr3)
+ 
+ # Generalized least squares fit by maximum likelihood
+ # Model: sqrtdensity ~ tidestate + observationhour + impact + x.pos +      y.pos + MonthOfYear + x.pos:impact + y.pos:impact 
+ # Data: EIA 
+ # AIC      BIC    logLik
+ # 69677.78 69801.28 -34823.89
+ # 
+ # Correlation Structure: ARMA(3,0)
+ # Formula: ~1 | block 
+ # Parameter estimate(s):
+ #   Phi1      Phi2      Phi3 
+ # 0.2727694 0.2371618 0.2344253 
+ # Variance function:
+ #   Structure: Exponential of variance covariate
+ # Formula: ~fitted(.) 
+ # Parameter estimates:
+ #   expon 
+ # 1.238794 
+ # 
+ # Coefficients:
+ #   Value  Std.Error    t-value p-value
+ # (Intercept)      0.9239912 0.04726503  19.549151  0.0000
+ # tidestateFLOOD   0.0332493 0.01264622   2.629190  0.0086
+ # tidestateSLACK   0.0839449 0.01163569   7.214430  0.0000
+ # observationhour -0.0322063 0.00221381 -14.547902  0.0000
+ # impact          -0.1421081 0.04249071  -3.344452  0.0008
+ # x.pos            0.0000613 0.00001010   6.068351  0.0000
+ # y.pos            0.0000027 0.00000735   0.361936  0.7174
+ # MonthOfYear      0.0010964 0.00298114   0.367782  0.7130
+ # x.pos:impact    -0.0000193 0.00001348  -1.432727  0.1519
+ # y.pos:impact    -0.0000036 0.00000987  -0.368806  0.7123
+ # 
+ # Correlation: 
+ #   (Intr) tFLOOD tSLACK obsrvt impact x.pos  y.pos  MnthOY impct:x.
+ # tidestateFLOOD  -0.091                                                          
+ # tidestateSLACK  -0.060  0.532                                                   
+ # observationhour -0.606 -0.051 -0.053                                            
+ # impact          -0.514  0.000  0.000  0.000                                     
+ # x.pos            0.588  0.000  0.000  0.000 -0.655                              
+ # y.pos            0.369  0.000  0.000  0.000 -0.410  0.420                       
+ # MonthOfYear     -0.379 -0.016 -0.026 -0.020  0.000  0.000  0.000                
+ # x.pos:impact    -0.441  0.000  0.000  0.000  0.861 -0.749 -0.315  0.000         
+ # y.pos:impact    -0.275  0.000  0.000  0.000  0.549 -0.313 -0.745  0.000  0.425  
+ # 
+ # Standardized residuals:
+ #   Min         Q1        Med         Q3        Max 
+ # -0.4902118 -0.4338976 -0.3734663 -0.2583996 10.0856739 
+ # 
+ # Residual standard error: 0.6057904 
+ # Degrees of freedom: 27798 total; 27788 residual
+ 
+ 
+ AIC(fit.gls, workingModel_GLScorr,
+     workingModel_GLScorr2,
+     workingModel_GLScorr3)
+ # df      AIC
+ # fit.gls               11 81697.00
+ # workingModel_GLScorr  13 72186.55
+ # workingModel_GLScorr2 14 70317.97
+ # workingModel_GLScorr3 15 69677.78
+ # 
+ 
+ BIC(fit.gls, workingModel_GLScorr,
+     workingModel_GLScorr2,
+     workingModel_GLScorr3)
+ # df      BIC
+ # fit.gls               11 81787.56
+ # workingModel_GLScorr  13 72293.58
+ # workingModel_GLScorr2 14 70433.22
+ # workingModel_GLScorr3 15 69801.28
+ 
+ 
+ #compare acf plots for each
+  #compare acf plots for each
+ #fitting a log-y model
+
+    plot(acf(residuals(fit.gls), lag.max=15), main="ACF function for the residuals")
+  x<-0:15
+ lines(x,ARMAacf(ar = c(0.2705746), ma = 0,lag.max = 15, pacf = FALSE),lwd=1)
+  lines(x,ARMAacf(ar = c(0.2248092 ,0.1664164),ma = 0, lag.max = 15, pacf = FALSE),lwd=2)
+  lines(x,ARMAacf(ar = c(0.21422922, 0.15190470, 0.06316328 ),ma = 0, lag.max = 15, pacf = FALSE),lwd=4)
+  legend(10,0.9, c("AR(1)", "AR(2)", "AR(3)"), lwd=c(1,2,3), bty="n")
+  
+  anova(fit.gls, type="marginal")
+  # Denom. DF: 27788 
+  # numDF  F-value p-value
+  # (Intercept)         1 797.0649  <.0001
+  # tidestate           2  11.9367  <.0001
+  # observationhour     1 229.2208  <.0001
+  # impact              1  38.3383  <.0001
+  # x.pos               1  89.5533  <.0001
+  # y.pos               1  22.1662  <.0001
+  # MonthOfYear         1   2.1357  0.1439
+  # impact:x.pos        1   4.3492  0.0370
+  # impact:y.pos        1   1.6654  0.1969
+  
+  
+  workingModel_GLScorr4<- gls(density ~ tidestate + observationhour + impact + x.pos + y.pos + x.pos:impact , data = EIA,weights=varExp(),
+                             correlation=corAR1(form =~1|block),method="ML")
+  
+
+  myprediction<-MuMIn:::predict.gls(workingModel_GLScorr4, newdata = newdat, se.fit=TRUE)
+  myprediction
+  newOvary <- data.frame(tidestate = "SLACK", observationhour = 10, x.pos = 1500, y.pos = 1000, impact = 0)
+  predict(myprediction,newOvary)
+  # a) tidestate = SLACK
+  # b) observation hour = 10am
+  # c) month of the year = 6
+  # d) x-position = 1500
+  # e) y-position = 1000
+  # f ) impact = 0 and 1
+  
+  # fm1 <- gls(follicles ~ sin(2*pi*Time) + cos(2*pi*Time), Ovary,
+  #            correlation = corAR1(form = ~ 1 | Mare))
+  # newOvary <- data.frame(Time = c(-0.75, -0.5, 0, 0.5, 0.75))
+  # predict(fm1, newOvary)
+  
   
   
