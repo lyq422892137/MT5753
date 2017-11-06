@@ -445,9 +445,9 @@ t.test(Year)
   # Year                   48.499037  1        6.964125
   # x.pos                   1.257333  1        1.121309
   # y.pos                   1.257333  1        1.121309
-  AIC(fit.full)
+  AIC(fit.full.fac)
   #170706.9
-  step.linearAllAIC<- step(fit.full, direction="both")
+  step.linearAllAIC<- step(fit.full.fac, direction="both")
   
   # 
   # Start:  AIC=91817.56
@@ -513,9 +513,8 @@ t.test(Year)
   fit.full2<- lm(density ~ DayOfMonth + MonthOfYear + Year, data=EIA)
   fit.full2
   summary(fit.full2)
-  sqrt(diag(vcov(fit.full2)))
-  (Intercept)  DayOfMonth MonthOfYear        Year 
-  0.337505504 0.003637977 0.009863393 0.030138770 
+  
+  
   # Call:
   #   lm(formula = density ~ DayOfMonth + MonthOfYear + Year, data = EIA)
   # 
@@ -536,15 +535,20 @@ t.test(Year)
   # Multiple R-squared:  0.001848,	Adjusted R-squared:  0.00174 
   # F-statistic: 17.15 on 3 and 27794 DF,  p-value: 4.005e-11
   # 
+  sqrt(diag(vcov(fit.full2)))
   
-  -0.215289 +qt(0.025,27794)*1.061470e-01
-  #-0.08175336 -0.4233424
-  -0.4233424/-0.08175336 
-  ##5.178287
-  -0.215289 -qt(0.025,27794)*1.061470e-01
-  #0.3343534 -0.007235643
-  0.3343534/-0.007235643
-  ##-46.20922
+  # (Intercept)  DayOfMonth MonthOfYear        Year 
+  # 0.337505504 0.003637977 0.009863393 0.030138770 
+  
+  
+  -0.215289 +qt(0.025,27794)*0.030138770 
+  #-0.08175336 -0.2743625
+  -0.4233424/-0.2743625
+  ##1.543004
+  -0.215289 -qt(0.025,27794)*0.030138770 
+  #0.3343534 -0.1562155
+  0.3343534/-0.1562155
+  ##-2.140334
   
   
   library(pedometrics)
@@ -559,4 +563,406 @@ t.test(Year)
   # 3.338e+00        2.594e-02        3.208e-01       -1.198e-01        1.076e-03  
   # MonthOfYear           impact            x.pos            y.pos  
   # 1.000e-02       -4.762e-01        2.151e-04        9.976e-05 
+  
+  library(pedometrics)
+  stepVIF(fit.full.fac)
+  # Call:
+  #   lm(formula = density ~ tidestate + observationhour + DayOfMonth + 
+  #        as.factor(MonthOfYear) + impact + x.pos + y.pos, data = EIA)
+  # 
+  # Coefficients:
+  #   (Intercept)            tidestateFLOOD            tidestateSLACK  
+  # 3.206e+00                 2.335e-02                 3.418e-01  
+  # observationhour                DayOfMonth   as.factor(MonthOfYear)2  
+  # -1.246e-01                 3.032e-03                 4.971e-01  
+  # as.factor(MonthOfYear)3   as.factor(MonthOfYear)4   as.factor(MonthOfYear)5  
+  # 3.738e-01                 9.431e-02                 1.142e-01  
+  # as.factor(MonthOfYear)6   as.factor(MonthOfYear)7   as.factor(MonthOfYear)8  
+  # 7.234e-02                 1.717e-01                 3.895e-01  
+  # as.factor(MonthOfYear)9  as.factor(MonthOfYear)10  as.factor(MonthOfYear)11  
+  # 2.517e-02                 3.141e-01                 3.519e-01  
+  # as.factor(MonthOfYear)12                    impact                     x.pos  
+  # 3.709e-01                -4.762e-01                 2.151e-04  
+  # y.pos  
+  # 9.976e-05  
+  # 
+  
+  # AIC(fit.full.fac)
+  # [1] 170702.2
+  # >   #170706.9
+  #   >   step.linearAllAIC<- step(fit.full.fac, direction="both")
+  # Start:  AIC=91812.91
+  # density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + 
+  #   impact + Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # - DayOfMonth              1       1.3 754750 91811
+  # - impact                  1       4.0 754753 91811
+  # <none>                                754749 91813
+  # - Year                    1      66.7 754816 91813
+  # - as.factor(MonthOfYear) 11     736.7 755486 91818
+  # - tidestate               2     633.3 755383 91832
+  # - y.pos                   1    1079.8 755829 91851
+  # - x.pos                   1    2895.5 757645 91917
+  # - observationhour         1    3935.9 758685 91955
+  # 
+  # Step:  AIC=91810.96
+  # density ~ tidestate + observationhour + as.factor(MonthOfYear) + 
+  #   impact + Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # - impact                  1       6.4 754757 91809
+  # <none>                                754750 91811
+  # - Year                    1      82.2 754833 91812
+  # + DayOfMonth              1       1.3 754749 91813
+  # - as.factor(MonthOfYear) 11     736.6 755487 91816
+  # - tidestate               2     632.1 755383 91830
+  # - y.pos                   1    1079.8 755830 91849
+  # - x.pos                   1    2895.5 757646 91915
+  # - observationhour         1    3947.0 758698 91954
+  # 
+  # Step:  AIC=91809.19
+  # density ~ tidestate + observationhour + as.factor(MonthOfYear) + 
+  #   Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # <none>                                754757 91809
+  # + impact                  1       6.4 754750 91811
+  # + DayOfMonth              1       3.6 754753 91811
+  # - as.factor(MonthOfYear) 11     969.8 755727 91823
+  # - tidestate               2     627.4 755384 91828
+  # - y.pos                   1    1079.8 755837 91847
+  # - Year                    1    1651.6 756408 91868
+  # - x.pos                   1    2895.5 757652 91914
+  # - observationhour         1    3965.4 758722 91953
+  # > 
+  # 
+  # 
+  ###############################
+  #### Q8
+  
+  fit.fullfac.noimp <- lm(density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + Year + x.pos + y.pos, data=EIA)
+  summary(fit.fullfac.noimp)
+  
+  # 
+  # Call:
+  #   lm(formula = density ~ tidestate + observationhour + DayOfMonth + 
+  #        as.factor(MonthOfYear) + Year + x.pos + y.pos, data = EIA)
+  # 
+  # Residuals:
+  #   Min      1Q  Median      3Q     Max 
+  # -3.153  -1.582  -1.105  -0.508 136.721 
+  # 
+  # Coefficients:
+  #   Estimate Std. Error t value Pr(>|t|)    
+  # (Intercept)               5.630e+00  3.932e-01  14.318  < 2e-16 ***
+  #   tidestateFLOOD            1.562e-02  7.588e-02   0.206  0.83689    
+  # tidestateSLACK            3.408e-01  7.969e-02   4.277 1.90e-05 ***
+  #   observationhour          -1.238e-01  1.025e-02 -12.082  < 2e-16 ***
+  #   DayOfMonth                1.409e-03  3.875e-03   0.364  0.71608    
+  # as.factor(MonthOfYear)2   4.829e-01  1.717e-01   2.813  0.00491 ** 
+  #   as.factor(MonthOfYear)3   2.571e-01  1.517e-01   1.694  0.09023 .  
+  # as.factor(MonthOfYear)4  -1.483e-01  1.457e-01  -1.018  0.30875    
+  # as.factor(MonthOfYear)5  -1.236e-01  1.558e-01  -0.794  0.42742    
+  # as.factor(MonthOfYear)6  -1.751e-01  1.618e-01  -1.082  0.27909    
+  # as.factor(MonthOfYear)7  -8.392e-02  1.746e-01  -0.481  0.63076    
+  # as.factor(MonthOfYear)8   1.477e-01  1.681e-01   0.879  0.37948    
+  # as.factor(MonthOfYear)9  -2.253e-01  1.666e-01  -1.352  0.17635    
+  # as.factor(MonthOfYear)10  7.093e-02  1.668e-01   0.425  0.67067    
+  # as.factor(MonthOfYear)11  9.765e-02  1.749e-01   0.558  0.57670    
+  # as.factor(MonthOfYear)12  1.225e-01  1.690e-01   0.725  0.46871    
+  # Year                     -2.399e-01  3.090e-02  -7.766 8.40e-15 ***
+  #   x.pos                     2.151e-04  2.083e-05  10.323  < 2e-16 ***
+  #   y.pos                     9.976e-05  1.582e-05   6.304 2.94e-10 ***
+  #   ---
+  #   Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+  # 
+  # Residual standard error: 5.212 on 27779 degrees of freedom
+  # Multiple R-squared:  0.01306,	Adjusted R-squared:  0.01242 
+  # F-statistic: 20.42 on 18 and 27779 DF,  p-value: < 2.2e-16
+  
+  anova(fit.full.fac,fit.fullfac.noimp)
+  # Analysis of Variance Table
+  # 
+  # Model 1: density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + 
+  #   impact + Year + x.pos + y.pos
+  # Model 2: density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + 
+  #   Year + x.pos + y.pos
+  # Res.Df    RSS Df Sum of Sq      F Pr(>F)
+  # 1  27778 754749                           
+  # 2  27779 754753 -1   -4.0428 0.1488 0.6997
+  
+  library(car)
+  Anova(fit.full.fac,fit.fullfac.noimp)
+  # Anova Table (Type II tests)
+  # 
+  # Response: density
+  # Sum Sq    Df  F value    Pr(>F)    
+  # tidestate                 633     2  11.6550 8.718e-06 ***
+  #   observationhour          3936     1 144.8642 < 2.2e-16 ***
+  #   DayOfMonth                  1     1   0.0468   0.82876    
+  # as.factor(MonthOfYear)    737    11   2.4649   0.00443 ** 
+  #   impact                      4     1   0.1488   0.69969    
+  # Year                       67     1   2.4567   0.11703    
+  # x.pos                    2896     1 106.5704 < 2.2e-16 ***
+  #   y.pos                    1080     1  39.7441 2.939e-10 ***
+  #   Residuals              754753 27779                       
+  # ---
+  #   Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+  
+  AIC(fit.fullfac.noimp)
+  AICc(fit.fullfac.noimp)
+  
+  
+  step.linearAllAIC<- step(fit.fullfac.noimp, direction="both")
+  # Start:  AIC=91811.06
+  # density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + 
+  #   Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # - DayOfMonth              1       3.6 754757 91809
+  # <none>                                754753 91811
+  # - as.factor(MonthOfYear) 11     972.5 755726 91825
+  # - tidestate               2     630.6 755384 91830
+  # - y.pos                   1    1079.8 755833 91849
+  # - Year                    1    1638.5 756392 91869
+  # - x.pos                   1    2895.5 757649 91916
+  # - observationhour         1    3966.1 758719 91955
+  # 
+  # Step:  AIC=91809.19
+  # density ~ tidestate + observationhour + as.factor(MonthOfYear) + 
+  #   Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # <none>                                754757 91809
+  # + DayOfMonth              1       3.6 754753 91811
+  # - as.factor(MonthOfYear) 11     969.8 755727 91823
+  # - tidestate               2     627.4 755384 91828
+  # - y.pos                   1    1079.8 755837 91847
+  # - Year                    1    1651.6 756408 91868
+  # - x.pos                   1    2895.5 757652 91914
+  # - observationhour         1    3965.4 758722 91953
+  # > 
+  
+  
+  require(MuMIn)
+  options(na.action='na.fail')
+  dredge(fit.fullfac.noimp)
+  
+  
+  
+  step.linearAllBIC<- step(fit.fullfac.noimp, direction="both", k=log(nrow(EIA)))
+  
+  # 
+  # 
+  # Start:  AIC=91967.48
+  # density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + 
+  #   Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # - as.factor(MonthOfYear) 11     972.5 755726 91891
+  # - DayOfMonth              1       3.6 754757 91957
+  # <none>                                754753 91967
+  # - tidestate               2     630.6 755384 91970
+  # - y.pos                   1    1079.8 755833 91997
+  # - Year                    1    1638.5 756392 92018
+  # - x.pos                   1    2895.5 757649 92064
+  # - observationhour         1    3966.1 758719 92103
+  # 
+  # Step:  AIC=91890.72
+  # density ~ tidestate + observationhour + DayOfMonth + Year + x.pos + 
+  #   y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # - DayOfMonth              1       0.9 755727 91881
+  # - tidestate               2     539.6 756265 91890
+  # <none>                                755726 91891
+  # - y.pos                   1    1079.8 756806 91920
+  # - Year                    1    1337.0 757063 91930
+  # + as.factor(MonthOfYear) 11     972.5 754753 91967
+  # - x.pos                   1    2895.5 758621 91987
+  # - observationhour         1    4123.8 759850 92032
+  # 
+  # Step:  AIC=91880.52
+  # density ~ tidestate + observationhour + Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # - tidestate               2     542.0 756269 91880
+  # <none>                                755727 91881
+  # + DayOfMonth              1       0.9 755726 91891
+  # - y.pos                   1    1079.8 756806 91910
+  # - Year                    1    1337.0 757064 91919
+  # + as.factor(MonthOfYear) 11     969.8 754757 91957
+  # - x.pos                   1    2895.5 758622 91977
+  # - observationhour         1    4137.0 759864 92022
+  # 
+  # Step:  AIC=91879.98
+  # density ~ observationhour + Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # <none>                                756269 91880
+  # + tidestate               2     542.0 755727 91881
+  # + DayOfMonth              1       3.3 756265 91890
+  # - y.pos                   1    1079.8 757348 91909
+  # - Year                    1    1359.6 757628 91920
+  # + as.factor(MonthOfYear) 11     884.4 755384 91960
+  # - x.pos                   1    2895.5 759164 91976
+  # - observationhour         1    4144.6 760413 92022
+  # 
+  
+  fit.full123<- lm(density ~ tidestate + observationhour + DayOfMonth + as.factor(MonthOfYear) + Year + x.pos + y.pos, data=EIA)
+  fit.full123
+  
+  fit.full123<-update(fit.full123, .~. + Year:x.pos + Year:y.pos)
+  summary(fit.full123)
+  
+  # 
+  # Call:
+  #   lm(formula = density ~ tidestate + observationhour + DayOfMonth + 
+  #        as.factor(MonthOfYear) + Year + x.pos + y.pos + Year:x.pos + 
+  #        Year:y.pos, data = EIA)
+  # 
+  # Residuals:
+  #   Min      1Q  Median      3Q     Max 
+  # -3.289  -1.566  -1.095  -0.514 136.679 
+  # 
+  # Coefficients:
+  #   Estimate Std. Error t value Pr(>|t|)    
+  # (Intercept)               6.697e+00  6.435e-01  10.407  < 2e-16 ***
+  #   tidestateFLOOD            1.562e-02  7.588e-02   0.206  0.83689    
+  # tidestateSLACK            3.408e-01  7.969e-02   4.277 1.90e-05 ***
+  #   observationhour          -1.238e-01  1.025e-02 -12.083  < 2e-16 ***
+  #   DayOfMonth                1.409e-03  3.874e-03   0.364  0.71607    
+  # as.factor(MonthOfYear)2   4.829e-01  1.717e-01   2.813  0.00490 ** 
+  #   as.factor(MonthOfYear)3   2.571e-01  1.517e-01   1.694  0.09022 .  
+  # as.factor(MonthOfYear)4  -1.483e-01  1.457e-01  -1.018  0.30873    
+  # as.factor(MonthOfYear)5  -1.236e-01  1.558e-01  -0.794  0.42740    
+  # as.factor(MonthOfYear)6  -1.751e-01  1.618e-01  -1.082  0.27906    
+  # as.factor(MonthOfYear)7  -8.392e-02  1.746e-01  -0.481  0.63074    
+  # as.factor(MonthOfYear)8   1.477e-01  1.681e-01   0.879  0.37946    
+  # as.factor(MonthOfYear)9  -2.253e-01  1.666e-01  -1.352  0.17633    
+  # as.factor(MonthOfYear)10  7.093e-02  1.668e-01   0.425  0.67066    
+  # as.factor(MonthOfYear)11  9.765e-02  1.749e-01   0.558  0.57669    
+  # as.factor(MonthOfYear)12  1.225e-01  1.690e-01   0.725  0.46869    
+  # Year                     -3.446e-01  5.874e-02  -5.867 4.49e-09 ***
+  #   x.pos                     6.144e-04  1.985e-04   3.096  0.00196 ** 
+  #   y.pos                     3.107e-04  1.508e-04   2.061  0.03929 *  
+  #   Year:x.pos               -3.916e-05  1.935e-05  -2.024  0.04302 *  
+  #   Year:y.pos               -2.069e-05  1.470e-05  -1.407  0.15936    
+  # ---
+  #   Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+  # 
+  # Residual standard error: 5.212 on 27777 degrees of freedom
+  # Multiple R-squared:  0.01322,	Adjusted R-squared:  0.01251 
+  # F-statistic:  18.6 on 20 and 27777 DF,  p-value: < 2.2e-16
+  
+  
+  Anova(fit.full123)
+  # Anova Table (Type II tests)
+  # 
+  # Response: density
+  # Sum Sq    Df  F value    Pr(>F)    
+  # tidestate                 631     2  11.6060 9.155e-06 ***
+  #   observationhour          3966     1 145.9881 < 2.2e-16 ***
+  #   DayOfMonth                  4     1   0.1323 0.7160725    
+  # as.factor(MonthOfYear)    973    11   3.2542 0.0001842 ***
+  #   Year                     1638     1  60.3108 8.378e-15 ***
+  #   x.pos                    2896     1 106.5796 < 2.2e-16 ***
+  #   y.pos                    1080     1  39.7476 2.933e-10 ***
+  #   Year:x.pos                111     1   4.0949 0.0430220 *  
+  #   Year:y.pos                 54     1   1.9804 0.1593564    
+  # Residuals              754634 27777                       
+  # ---
+  #   Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+  
+  
+  step.linearAllBIC111<- step(fit.full123, direction="both", k=log(nrow(EIA)))
+  # Step:  AIC=91879.98
+  # density ~ observationhour + Year + x.pos + y.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # <none>                                756269 91880
+  # + tidestate               2     542.0 755727 91881
+  # + Year:x.pos              1      65.7 756203 91888
+  # + Year:y.pos              1       8.3 756260 91890
+  # + DayOfMonth              1       3.3 756265 91890
+  # - y.pos                   1    1079.8 757348 91909
+  # - Year                    1    1359.6 757628 91920
+  # + as.factor(MonthOfYear) 11     884.4 755384 91960
+  # - x.pos                   1    2895.5 759164 91976
+  # - observationhour         1    4144.6 760413 92022
+  
+  
+  step.linearAllAIC111<- step(fit.full123, direction="both")
+  # Step:  AIC=91808.77
+  # density ~ tidestate + observationhour + as.factor(MonthOfYear) + 
+  #   Year + x.pos + y.pos + Year:x.pos
+  # 
+  # Df Sum of Sq    RSS   AIC
+  # <none>                                754691 91809
+  # + Year:y.pos              1      53.8 754637 91809
+  # - Year:x.pos              1      65.7 754757 91809
+  # + DayOfMonth              1       3.6 754688 91811
+  # - as.factor(MonthOfYear) 11     969.8 755661 91822
+  # - tidestate               2     627.4 755319 91828
+  # - y.pos                   1    1079.8 755771 91847
+  # - observationhour         1    3965.4 758657 91952
+  
+  AICc(fit.full123)
+  
+  require(MuMIn)
+  options(na.action='na.fail')
+  dredge(fit.full123)
+  
+  
+  fit.full1234<- lm(density ~ tidestate + observationhour + as.factor(MonthOfYear) + Year + x.pos + y.pos, data=EIA)
+  fit.full1234
+  
+  fit.full1234<-update(fit.full1234, .~. + Year:x.pos + Year:y.pos)
+  summary(fit.full1234)
+  Anova(fit.full1234)
+  # Anova Table (Type II tests)
+  # 
+  # Response: density
+  # Sum Sq    Df  F value    Pr(>F)    
+  # tidestate                 627     2  11.5477 9.705e-06 ***
+  #   observationhour          3965     1 145.9666 < 2.2e-16 ***
+  #   as.factor(MonthOfYear)    970    11   3.2454 0.0001911 ***
+  #   Year                     1652     1  60.7947 6.556e-15 ***
+  #   x.pos                    2896     1 106.5829 < 2.2e-16 ***
+  #   y.pos                    1080     1  39.7488 2.932e-10 ***
+  #   Year:x.pos                111     1   4.0950 0.0430188 *  
+  #   Year:y.pos                 54     1   1.9805 0.1593499    
+  # Residuals              754637 27778                       
+  # ---
+  #   Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+  
+  plot(c(1:100))
+  plot(fit.full123)
+  plot(fit.fullfac.noimp)
+  plot(fit.fullfac.noimp-fit.full123)
+
+  summary(fit.full123)
+  summary(fit.fullfac.noimp)
+  
+  
+  ?ncvTest
+  
+  
+  acf(residuals(fit.full123))
+  durbinWatsonTest(fit.full123)
+  # lag Autocorrelation D-W Statistic p-value
+  # 1      0.09346066      1.813072       0
+  # Alternative hypothesis: rho != 0
+  
+  
+  
+  ##############################################
+  #####################################Q19
+  EIA$sqrtdensity<-sqrt(density)
+  library("nlme")
+  ##fit.gls<-gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + impact:x.pos + impact:y.pos, data = EIA, method='ML', weights=????)
+  fit.gls<-gls(sqrtdensity ~ tidestate + observationhour + impact + x.pos + y.pos + MonthOfYear + impact:x.pos + impact:y.pos, data = EIA, method='ML')
+  ?gls
+  
   
