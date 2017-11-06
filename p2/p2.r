@@ -1234,7 +1234,7 @@ t.test(Year)
 
   myprediction<-MuMIn:::predict.gls(workingModel_GLScorr4, newdata = newdat, se.fit=TRUE)
   myprediction
-  newOvary <- data.frame(tidestate = "SLACK", observationhour = 10, x.pos = 1500, y.pos = 1000, impact = 0)
+  newOvary <- data.frame(tidestate = "SLACK", observationhour = 10, impact = 0, x.pos = 1500, y.pos = 1000 )
   predict(myprediction,newOvary)
   # a) tidestate = SLACK
   # b) observation hour = 10am
